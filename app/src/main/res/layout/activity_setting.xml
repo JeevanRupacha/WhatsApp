@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.SettingActivity">
+
+  <androidx.appcompat.widget.Toolbar
+      android:id="@+id/setting_toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@color/colorPrimary"
+      android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+  <ScrollView
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_below="@+id/setting_toolbar">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+      <de.hdodenhof.circleimageview.CircleImageView
+          android:id="@+id/profile_image_settings"
+          android:layout_width="200dp"
+          android:layout_height="200dp"
+          android:src="@drawable/profile"
+          app:civ_border_width="3dp"
+          app:civ_border_overlay="true"
+          android:layout_gravity="center_horizontal"
+          android:layout_margin="16dp"
+          app:civ_border_color="@color/colorPrimary"/>
+
+      <EditText
+          android:id="@+id/edit_username"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textSize="16sp"
+          android:gravity="center"
+          android:layout_margin="8dp"
+          android:inputType="text|textNoSuggestions"
+          android:text="Username"/>
+
+      <EditText
+          android:id="@+id/edit_profile_bio"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textSize="16sp"
+          android:gravity="center"
+          android:layout_margin="8dp"
+          android:text="Hi, I am Software Engineer"/>
+
+      <Button
+          android:id="@+id/settings_update_button"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textSize="16sp"
+          android:background="@color/colorPrimary"
+          android:layout_margin="16dp"
+          android:textColor="@color/colorAccent"
+          android:text="Update"/>
+
+    </LinearLayout>
+
+  </ScrollView>
+
+
+</RelativeLayout>

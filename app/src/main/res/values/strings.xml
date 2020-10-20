@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">WhatsApp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="contact_label">Contacts</string>
+    <string name="chat_label">Chats</string>
+    <string name="group_label">Groups</string>
+    <string name="email_label">Email</string>
+    <string name="forget_password">Forget Password?</string>
+    <string name="register_label">Need new Account?</string>
+    <string name="register_with_number">Phone Number</string>
+    <string name="register_with_google">Google</string>
+    <string name="register_with_others_label">or Login using your</string>
+    <string name="already_have_account">Already have an Account?</string>
+    <string name="setting">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="setting_titles">Settings</string>
+    <string name="users_collections_name">Users</string>
+    <string name="enter_group_name">Enter the Group Name</string>
+    <string name="enter_group_code">Enter the Group Code</string>
+</resources>
