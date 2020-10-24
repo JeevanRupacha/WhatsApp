@@ -6,5 +6,7 @@
     <color name="colorWhiteBackground">#E6E6E6</color>
     <color name="orange_color">#FF5722</color>
     <color name="add_group_color">#673AB7</color>
+    <color name="start_btn_num_login">#2979FF</color>
+    <color name="end_btn_num_login">#1E88E5</color>
 
 </resources>

@@ -6,30 +6,32 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/group_list_cardView"
-        android:layout_width="match_parent"
-        android:layout_height="90dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="4dp"
         app:cardBackgroundColor="@color/colorPrimary"
-        app:cardCornerRadius="6dp"
+        app:cardCornerRadius="100dp"
         android:layout_marginBottom="8dp">
 
         <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:background="@drawable/background_protection"/>
 
         <TextView
             android:id="@+id/group_title_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Group Title"
-            android:textSize="32sp"
-            android:textStyle="bold"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:fontFamily="@font/annie_use_your_telescope"
+            android:gravity="center"
+            android:text="Group Titl fgdf g"
             android:textColor="@color/colorAccent"
-            android:layout_margin="8dp"/>
+            android:textSize="32sp"
+            android:textStyle="bold" />
 
     </androidx.cardview.widget.CardView>
 

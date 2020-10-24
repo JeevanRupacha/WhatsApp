@@ -11,8 +11,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activities.SettingActivity"></activity>
-        <activity android:name=".Activities.GroupActivity"></activity>
+        <activity android:name=".Activities.LoginNumberEditActivity"></activity>
+        <activity android:name=".Activities.LoginPhoneNumberActivity" />
+        <activity android:name=".Activities.SettingActivity" />
+        <activity android:name=".Activities.GroupMessageActivity" />
         <activity android:name=".Activities.RegisterAccount" />
         <activity android:name=".MainActivity">
             <intent-filter>

@@ -18,13 +18,18 @@
             android:layout_weight="1"
             app:cardCornerRadius="8dp"
             app:cardBackgroundColor="@color/add_group_color"
-            android:layout_margin="16dp">
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginRight="8dp">
 
             <ImageButton
+                android:padding="8dp"
                 android:id="@+id/add_group_imagebutton"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
+                android:scaleType="fitCenter"
                 android:background="@color/fui_transparent"
                 android:src="@drawable/ic_baseline_add_circle_outline_24"
                 android:tint="#FFFFFF" />
@@ -37,7 +42,10 @@
             app:cardCornerRadius="8dp"
             android:elevation="100dp"
             app:cardBackgroundColor="@color/orange_color"
-            android:layout_margin="16dp">
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginRight="16dp">
 
             <Button
                 android:id="@+id/create_new_group_button"
@@ -56,12 +64,13 @@
     <RelativeLayout
         android:layout_below="@+id/create_add_group"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/group_list_recyclerview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
 
     </RelativeLayout>
 

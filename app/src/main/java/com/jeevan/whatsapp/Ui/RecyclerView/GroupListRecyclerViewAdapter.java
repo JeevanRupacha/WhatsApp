@@ -2,7 +2,6 @@ package com.jeevan.whatsapp.Ui.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,13 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.jeevan.whatsapp.Activities.GroupActivity;
+import com.jeevan.whatsapp.Activities.GroupMessageActivity;
 import com.jeevan.whatsapp.Data.FeedDataEntry;
 import com.jeevan.whatsapp.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -64,7 +61,7 @@ public class GroupListRecyclerViewAdapter extends RecyclerView.Adapter<GroupList
 
 
     private void sendToGroupActivity(Map map) {
-        Intent intent = new Intent(context, GroupActivity.class);
+        Intent intent = new Intent(context, GroupMessageActivity.class);
             if(map.get(FeedDataEntry.GROUP_TITLE) != null && map.get(FeedDataEntry.GROUP_ID) != null){
             intent.putExtra(FeedDataEntry.GROUP_TITLE,map.get(FeedDataEntry.GROUP_TITLE).toString());
             intent.putExtra(FeedDataEntry.GROUP_ID, map.get(FeedDataEntry.GROUP_ID).toString());

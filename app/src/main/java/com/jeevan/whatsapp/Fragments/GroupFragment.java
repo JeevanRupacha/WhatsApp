@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,6 +47,7 @@ import java.util.UUID;
 
 public class GroupFragment extends Fragment implements View.OnClickListener {
 
+    private static final int NUMS_GRID_COLS = 2;
     //Fields
     private ImageButton addGroupButton;
     private Button createNewButton;
@@ -106,7 +108,7 @@ public class GroupFragment extends Fragment implements View.OnClickListener {
         recyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        layoutManager = new LinearLayoutManager(getContext());
+        layoutManager = new GridLayoutManager(getContext(), NUMS_GRID_COLS);
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)

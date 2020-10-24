@@ -22,15 +22,21 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.jeevan.whatsapp.Activities.LoginActivity;
+import com.jeevan.whatsapp.Activities.LoginPhoneNumberActivity;
 import com.jeevan.whatsapp.Activities.RegisterAccount;
 import com.jeevan.whatsapp.Activities.SettingActivity;
+import com.jeevan.whatsapp.Data.UserProfile;
 import com.jeevan.whatsapp.Fragments.ChatFragment;
 import com.jeevan.whatsapp.Fragments.ContactFragment;
 import com.jeevan.whatsapp.Fragments.GroupFragment;
@@ -100,6 +106,23 @@ public class MainActivity extends AppCompatActivity {
                     //no user is login
                     sendToLogin();
                     finish();
+                }else if (firebaseAuth.getCurrentUser() != null)
+                {
+                    db.collection("Users").document(firebaseAuth.getCurrentUser().getUid())
+                            .get()
+                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful())
+                                    {
+                                        DocumentSnapshot documentSnapshot = task.getResult();
+                                        if(!documentSnapshot.exists())
+                                        {
+                                           createUserData();
+                                        }
+                                    }
+                                }
+                            });
                 }
             }
         };
@@ -113,6 +136,34 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeViewsVariables() {
 
+    }
+
+    private void createUserData()
+    {
+        db.collection("Users").document(firebaseAuth.getCurrentUser().getUid())
+                .set(new UserProfile())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "onSuccess: Success user id is created ");
+
+                        /**
+                         * send to setting actvity to fill user info if user if first time
+                         * here signed in
+                         */
+                        sendToSettingActivity();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: Fail to create user id in Users document");
+            }
+        });
+    }
+
+    private void sendToSettingActivity()
+    {
+        startActivity(new Intent(MainActivity.this, SettingActivity.class));
     }
 
     private void setUpToolBar() {
@@ -163,6 +214,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendToLogin()
     {
+        sendToNumberLogin();
+    }
+
+    private void sendToNumberLogin() {
+        startActivity(new Intent(MainActivity.this, LoginPhoneNumberActivity.class));
+    }
+
+    private void sendToEmailLogin() {
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);
     }

@@ -15,6 +15,9 @@ public class FeedDataEntry {
     public static final String GROUP_BACKGROUND_COLOR= "groupBackgroundColor";
     public static final String GROUP_LIST = "groupList";
     public static final String GROUP_ID = "groupId";
+    public static final String MEMBERS = "members";
+    public static final String MESSAGE = "message";
+    public static final String MESSAGE_ADMIN_ID = "messageAdminId";
 
 
     private FeedDataEntry(){}

@@ -18,4 +18,11 @@
     <string name="users_collections_name">Users</string>
     <string name="enter_group_name">Enter the Group Name</string>
     <string name="enter_group_code">Enter the Group Code</string>
+    <string name="login_with_number">Proceed with Phone Number</string>
+    <string name="from_company_name">From Jee @2020 </string>
+    <string name="welcome">Welcome to Company .</string>
+    <string name="send_notifications">Send Notification</string>
+    <string name="verify">Verify</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="hello">Hello .</string>
 </resources>

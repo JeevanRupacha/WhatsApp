@@ -2,12 +2,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -15,31 +17,62 @@
 
         <include
             android:id="@+id/group_activity_app_bar"
-            android:layout_alignParentTop="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             layout="@layout/app_bar_layout" />
 
-        <RelativeLayout
+        <ScrollView
+            android:id="@+id/group_message_scrollView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/group_activity_app_bar"/>
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/middle_message_layout"
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:paddingBottom="8dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/messageTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="" />
+            </LinearLayout>
+
+        </ScrollView>
 
         <LinearLayout
             android:id="@+id/input_message_bar_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_alignParentBottom="true"
-            >
+            android:padding="8dp"
+            android:gravity="center_vertical">
 
-            <Button
-                android:layout_width="wrap_content"
+            <EditText
+                android:id="@+id/input_message_editText_group"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="send"/>
+                android:layout_weight="1"
+                android:hint="Enter message"
+                android:fontFamily="@font/roboto"
+                android:inputType="textAutoCorrect"/>
+
+            <ImageButton
+                android:id="@+id/send_message_button_group"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:tint="@color/colorPrimary"
+                android:scaleType="centerInside"
+                android:background="@drawable/circle_background"
+                android:src="@drawable/ic_baseline_send_24"
+                tools:src="@drawable/ic_baseline_send_24"
+                />
 
         </LinearLayout>
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
