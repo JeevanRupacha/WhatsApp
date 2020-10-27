@@ -4,7 +4,7 @@ public class FeedDataEntry {
 
     public static final String USERNAME = "username";
     public static final String PROFILE_BIO = "profileBio";
-    public static final String PROFILE_IMAGE_CIRCLE_SOURCE = "profileBio";
+    public static final String PROFILE_IMAGE_CIRCLE_SOURCE = "profileImageSrc";
 
 
     /**

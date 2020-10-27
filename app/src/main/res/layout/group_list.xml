@@ -11,8 +11,9 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="4dp"
-        app:cardBackgroundColor="@color/colorPrimary"
+        app:cardBackgroundColor="@color/group_list_back"
         app:cardCornerRadius="100dp"
+        android:elevation="9dp"
         android:layout_marginBottom="8dp">
 
         <View
@@ -29,7 +30,6 @@
             android:fontFamily="@font/annie_use_your_telescope"
             android:gravity="center"
             android:text="Group Titl fgdf g"
-            android:textColor="@color/colorAccent"
             android:textSize="32sp"
             android:textStyle="bold" />
 

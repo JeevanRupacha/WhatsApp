@@ -30,8 +30,10 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.jeevan.whatsapp.Data.FeedDataEntry;
 import com.jeevan.whatsapp.Data.Message;
@@ -122,6 +124,8 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
                          * concept with stackoverflow
                          * Auto scroll when message is changed
                          */
+                        //TODO fix auto scroll when message is not seen
+                        scrollView.setSmoothScrollingEnabled(true);
                         scrollView.post(new Runnable() {
                             public void run() {
                                 scrollView.fullScroll(ScrollView.FOCUS_DOWN);
@@ -171,12 +175,72 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            startActivity(new Intent(GroupMessageActivity.this, MainActivity.class));
-            finish(); // close this activity and return to preview activity (if there is any)
+
+
+        switch (item.getItemId())
+        {
+            case android.R.id.home : goBackToHome();
+                break;
+            case R.id.leaveGroup: leaveGroup();
+            break;
+            case R.id.report: report();
+            break;
+            default:break;
         }
 
+
         return super.onOptionsItemSelected(item);
+    }
+
+    private void leaveGroup(){
+        Toast.makeText(this, "leave group", Toast.LENGTH_SHORT).show();
+
+       removeFromGroups();
+       removeFromUsers();
+
+    }
+
+    private void removeFromUsers() {
+        /////update the arraylist of group id list in user document after remove group id
+        DocumentReference groupListIdRef = db.collection("Users")
+                .document(firebaseAuth.getCurrentUser().getUid());
+
+        groupListIdRef.update("groupList", FieldValue.arrayRemove(groupId))
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        sentToMainActivity();
+                        Log.d(TAG, "onSuccess:  removed the group Id from user grouplist ");
+                    }
+                });
+    }
+
+    private void removeFromGroups() {
+        /////remove the member from arraylist of group members list in Groups document
+        DocumentReference groupListIdRef = db.collection("Groups")
+                .document(groupId);
+
+        groupListIdRef.update("members", FieldValue.arrayRemove(firebaseAuth.getCurrentUser().getUid()))
+        .addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "onSuccess: removed from groups");
+            }
+        });
+
+    }
+
+
+
+    private void report()
+    {
+        Toast.makeText(this, "report", Toast.LENGTH_SHORT).show();
+    }
+
+    private void goBackToHome()
+    {
+        startActivity(new Intent(GroupMessageActivity.this, MainActivity.class));
+        finish(); // close this activity and return to preview activity (if there is any)
     }
 
     private void setUpSpinkKit()

@@ -144,7 +144,7 @@ public class LoginNumberEditActivity extends AppCompatActivity {
                 mResendToken = token;
 
                 Toast.makeText(LoginNumberEditActivity.this, "Code has been sent!", Toast.LENGTH_SHORT).show();
-                sendCodeMessageTextView.setText("The 6 digits code has been sent to your number "+ phoneNumber + " enter below to verify your number.");
+                sendCodeMessageTextView.setText("The 6 digits code has been sent to number "+ phoneNumber + " enter below to verify your number.");
             }
         };
 

@@ -5,9 +5,9 @@ import java.util.List;
 
 public class UserProfile {
     private String firstName, middleName , lastName;
-    private String username;
-    private int profileImageSrc;
-    private String profileBio;
+    private String username ="Username";
+    private String profileImageSrc;
+    private String profileBio ="User Bio";
     private long timeAccountCreated;
     private String userID;
     private List<String> groupList = new ArrayList<>();
@@ -23,11 +23,11 @@ public class UserProfile {
         return groupList;
     }
 
-    public int getProfileImageSrc() {
+    public String getProfileImageSrc() {
         return profileImageSrc;
     }
 
-    public void setProfileImageSrc(int profileImageSrc) {
+    public void setProfileImageSrc(String profileImageSrc) {
         this.profileImageSrc = profileImageSrc;
     }
 
@@ -53,10 +53,6 @@ public class UserProfile {
 
     public String getUsername() {
         return username;
-    }
-
-    public int getProfileImage() {
-        return profileImageSrc;
     }
 
     public String getProfileBio() {
@@ -85,10 +81,6 @@ public class UserProfile {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public void setProfileImage(int profileImageSrc) {
-        this.profileImageSrc = profileImageSrc;
     }
 
     public void setProfileBio(String profileBio) {

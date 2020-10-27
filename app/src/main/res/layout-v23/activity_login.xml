@@ -152,7 +152,6 @@
         android:layout_gravity="center"
         android:background="@color/colorPrimaryDark"
         android:visibility="gone"
-        app:SpinKit_Color="@color/colorPrimaryDark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

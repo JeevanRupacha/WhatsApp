@@ -59,6 +59,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         registerNewAccount.setOnClickListener(this);
         loginButton.setOnClickListener(this);
+        phoneNumberButton.setOnClickListener(this);
 
 
     }
@@ -95,8 +96,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.loginButton : login();
                 break;
+            case R.id.registerWithNumber: PhoneNumberAuth();
+                break;
             default:break;
         }
+    }
+
+    private void PhoneNumberAuth() {
+        sendToPhoneNumberLogin();
+    }
+
+    private void sendToPhoneNumberLogin() {
+        startActivity(new Intent(LoginActivity.this, LoginPhoneNumberActivity.class));
     }
 
     private void login() {

@@ -1,12 +1,16 @@
 package com.jeevan.whatsapp.Activities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,30 +22,38 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.api.LogDescriptor;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.jeevan.whatsapp.Data.FeedDataEntry;
 import com.jeevan.whatsapp.Data.UserProfile;
 import com.jeevan.whatsapp.MainActivity;
 import com.jeevan.whatsapp.R;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.sql.Time;
-import java.util.Date;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SettingActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "SettingActivity";
+    private static final int GALLERY_PICKER_ID = 1;
+
+
+//    gs://whats-app-clone-d85bd.appspot.com/Profile Images/DKLxz07mhSfnQovvAv8nXtLTPMD3.jpg
+//    https://firebasestorage.googleapis.com/v0/b/whats-app-clone-d85bd.appspot.com/o?name=Profile%20Images%2FDKLxz07mhSfnQovvAv8nXtLTPMD3.jpg
 
 
     //Fields variables
@@ -52,7 +64,10 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     //firebase setup
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth auth = FirebaseAuth.getInstance();
+    private StorageReference profileImageStorageRef = FirebaseStorage.getInstance().getReference().child("Profile Images");
 
+    //loading bar
+    private ProgressDialog loading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,15 +76,133 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
 
         setUpToolbar();
         initializeFields();
-        updateUI();
+
 
         updateButton.setOnClickListener(this);
+        circleProfileImage.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //starts the gallery to pick images
+        if(requestCode == GALLERY_PICKER_ID && resultCode == RESULT_OK && data != null)
+        {
+            Uri imageUri = data.getData();
+
+            // start picker to get image for cropping and then use the image in cropping activity
+            CropImage.activity(imageUri)
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setAspectRatio(1,1)
+                    .start(this);
+        }
+
+
+        //library activity check
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
+            if(resultCode == RESULT_OK)
+            {
+                loadingBar();
+                uploadImage(result);
+
+            }
+        }
+    }
+
+    private void uploadImage(CropImage.ActivityResult result)
+    {
+        Uri resultUri = result.getUri();
+        final StorageReference filePath = profileImageStorageRef.child(auth.getCurrentUser().getUid() +".jpg");
+
+        filePath.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful())
+                {
+                    Log.d(TAG, "onComplete: Success to delete the image");
+                }else{
+                    Log.d(TAG, "onComplete: Failure to delete the image");
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: " + e);
+            }
+        });
+
+        Bitmap bmp = null;
+        try {
+            bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), resultUri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assert bmp != null;
+        bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+        byte[] imageData = baos.toByteArray();
+        //uploading the image
+        final UploadTask uploadTask2 = filePath.putBytes(imageData);
+
+        uploadTask2.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        Map<String, String> profilePic = new HashMap<>();
+
+                        //url.substring(0,url.indexOf("&"))
+                        profilePic.put("profileImageSrc", String.valueOf(uri));
+
+                        //upload image uri into users imageProfileLink
+                        DocumentReference docRef = db.collection("Users")
+                                .document(auth.getCurrentUser().getUid());
+
+
+                        docRef.set(profilePic,SetOptions.merge())
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful())
+                                        {
+                                            updateFields();
+                                            Log.d(TAG, "onComplete: Success upload image uri");
+                                        }else{
+                                            Log.d(TAG, "onComplete: fail to upload image uri");
+                                        }
+                                    }
+                                });
+
+                        if(loading != null)
+                        {
+                            loading.dismiss();
+                        }
+                        Toast.makeText(SettingActivity.this, "Success", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+
     }
 
     private void updateUI() {
         //updates the editable fields like user name user bio etc
         updateFields();
     }
+
+
 
     private void updateFields()
     {
@@ -91,9 +224,24 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                                 //update Fields
                                 String usernameText = String.valueOf(document.getData().get(FeedDataEntry.USERNAME));
                                 String profileBioTExt = String.valueOf(document.getData().get(FeedDataEntry.PROFILE_BIO));
+                                String profileImageSrc = (String) document.getData().get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE);
                                 username.setText(usernameText);
                                 profileBio.setText(profileBioTExt);
-                                //TODO not working circleProfileImage.setImageResource(Integer.parseInt(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE));
+
+                                if(profileImageSrc != null)
+                                {
+                                    Picasso.get().load(profileImageSrc).into(circleProfileImage, new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            Log.d(TAG, "onSuccess: profile image");
+                                        }
+
+                                        @Override
+                                        public void onError(Exception e) {
+                                            Log.d(TAG, "onError: profile image " + e);
+                                        }
+                                    });
+                                }
 
                             } else {
                                 Log.d(TAG, "No such document");
@@ -145,8 +293,17 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         {
             case R.id.settings_update_button : updateUserProfile();
             break;
+            case R.id.profile_image_settings: selectProfileImage();
+            break;
             default:break;
         }
+    }
+
+    private void selectProfileImage() {
+        Intent galleryIntent = new Intent();
+        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+        galleryIntent.setType("image/*");
+        startActivityForResult(galleryIntent, GALLERY_PICKER_ID);
     }
 
     private void updateUserProfile() {
@@ -155,14 +312,15 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         String usernameMap = username.getText().toString();
         String profileBioMap = profileBio.getText().toString();
 
+        HashMap<String, String> data = new HashMap<>();
 
-        userProfile.setUserID(auth.getCurrentUser().getUid());
-        userProfile.setUsername(usernameMap);
-        userProfile.setProfileBio(profileBioMap);
+        data.put("userID",auth.getCurrentUser().getUid());
+        data.put("username",usernameMap);
+        data.put("profileBio",profileBioMap);
 
         db.collection("Users")
                 .document(auth.getCurrentUser().getUid())
-                .set(userProfile, SetOptions.merge())
+                .set(data, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -176,6 +334,17 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                         Log.d(TAG, "onFailure: Fail to update user data in Users collections error= " +e);
                     }
                 });
+    }
+
+
+    private void loadingBar()
+    {
+        loading = new ProgressDialog(this);
+        loading.setCancelable(false);
+        loading.setMessage("Uploading File...");
+        loading.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        loading.setTitle("Wait..");
+        loading.show();
     }
 
 

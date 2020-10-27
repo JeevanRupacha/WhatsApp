@@ -2,14 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/setting"
-        android:title="@string/setting"
+    <item android:id="@+id/report"
+        android:title="@string/report"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/logout"
-        android:title="@string/logout"
+    <item android:id="@+id/leaveGroup"
+        android:title="@string/leave_group"
         app:showAsAction="never"/>
-
 
 
 </menu>

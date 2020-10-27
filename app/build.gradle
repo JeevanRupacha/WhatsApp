@@ -37,6 +37,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.1.0'
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -55,7 +56,7 @@ dependencies {
     implementation 'com.github.tfcporciuncula:phonemoji:1.0.1'
 
     //https://github.com/raycoarana/material-code-input
-    compile 'com.raycoarana.codeinputview:codeinputview:2.1.1'
+    implementation 'com.raycoarana.codeinputview:codeinputview:2.1.1'
 
     //https://github.com/alphamu/PinEntryEditText
     implementation ('com.alimuzaffar.lib:pinentryedittext:2.0.6') {
@@ -63,6 +64,14 @@ dependencies {
         // androidx.appcompat as a dependency in your app.
         exclude group: 'androidx.appcompat', module: 'appcompat'
     }
+
+    //https://github.com/ArthurHub/Android-Image-Cropper
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
+
+    //picaso image load library
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
 
 
 }

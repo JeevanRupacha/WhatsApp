@@ -32,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.jeevan.whatsapp.Activities.FindFriendsActivity;
 import com.jeevan.whatsapp.Activities.LoginActivity;
 import com.jeevan.whatsapp.Activities.LoginPhoneNumberActivity;
 import com.jeevan.whatsapp.Activities.RegisterAccount;
@@ -65,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-    private FirebaseUser currentUser = firebaseAuth.getCurrentUser();
     private FirebaseAuth.AuthStateListener authStateListener;
 
     /**
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendToLogin()
     {
-        sendToNumberLogin();
+        sendToEmailLogin();
     }
 
     private void sendToNumberLogin() {
@@ -224,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
     private void sendToEmailLogin() {
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);
+        finish();
     }
 
 
@@ -243,9 +244,15 @@ public class MainActivity extends AppCompatActivity {
             break;
             case R.id.logout : logout();
             break;
+            case R.id.find_friends : findFriends();
+                break;
             default:break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void findFriends() {
+        startActivity(new Intent(MainActivity.this, FindFriendsActivity.class));
     }
 
     private void logout() {
