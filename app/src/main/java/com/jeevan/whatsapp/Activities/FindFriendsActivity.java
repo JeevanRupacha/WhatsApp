@@ -3,6 +3,10 @@ package com.jeevan.whatsapp.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelStore;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +38,7 @@ import com.jeevan.whatsapp.MainActivity;
 import com.jeevan.whatsapp.R;
 import com.jeevan.whatsapp.Ui.RecyclerView.FriendListRecyclerViewAdapter;
 import com.jeevan.whatsapp.Ui.RecyclerView.GroupListRecyclerViewAdapter;
+import com.jeevan.whatsapp.WhatsAppMVVC.WhatsAppDataModel;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -58,6 +63,9 @@ public class FindFriendsActivity extends AppCompatActivity {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth auth = FirebaseAuth.getInstance();
 
+    //android MVVC
+    private WhatsAppDataModel whatsAppDataModel;
+
 
 
     @Override
@@ -67,8 +75,14 @@ public class FindFriendsActivity extends AppCompatActivity {
 
         setUpToolbar();
         initializeFields();
-        retrieveUsersData();
 
+        whatsAppDataModel.getUsersDocument().observe(this, new Observer<ArrayList<Map>>() {
+            @Override
+            public void onChanged(ArrayList<Map> usersArrayList) {
+                mDataset.addAll(usersArrayList);
+                setUpRecyclerView();
+            }
+        });
     }
 
     @Override
@@ -86,6 +100,9 @@ public class FindFriendsActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.find_friends_recyclerView);
         progressBar = findViewById(R.id.find_friends_progressBar);
         mDataset = new ArrayList<>();
+
+        //android jetPack viewModel live data component architecture
+        whatsAppDataModel = new ViewModelProvider(this).get(WhatsAppDataModel.class);
     }
 
     private void setUpRecyclerView() {
@@ -106,33 +123,7 @@ public class FindFriendsActivity extends AppCompatActivity {
         progressBar.setVisibility(View.GONE);
     }
 
-    public void retrieveUsersData()
-    {
-        db.collection("Users")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if(task.isSuccessful())
-                        {
-                            QuerySnapshot document = task.getResult();
 
-                            if(document == null)
-                            {
-                                return;
-                            }
-
-                            for(QueryDocumentSnapshot data: document)
-                            {
-                                mDataset.add(data.getData());
-                                setUpRecyclerView();
-                                Log.d(TAG, "onComplete: " + data.getData());
-                            }
-
-                        }
-                    }
-                });
-    }
 
     private void setUpToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.find_friends_toolbar);

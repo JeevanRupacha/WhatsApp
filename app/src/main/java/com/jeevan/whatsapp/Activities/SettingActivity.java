@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -34,6 +36,7 @@ import com.jeevan.whatsapp.Data.FeedDataEntry;
 import com.jeevan.whatsapp.Data.UserProfile;
 import com.jeevan.whatsapp.MainActivity;
 import com.jeevan.whatsapp.R;
+import com.jeevan.whatsapp.WhatsAppMVVC.WhatsAppDataModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -52,10 +55,6 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     private static final int GALLERY_PICKER_ID = 1;
 
 
-//    gs://whats-app-clone-d85bd.appspot.com/Profile Images/DKLxz07mhSfnQovvAv8nXtLTPMD3.jpg
-//    https://firebasestorage.googleapis.com/v0/b/whats-app-clone-d85bd.appspot.com/o?name=Profile%20Images%2FDKLxz07mhSfnQovvAv8nXtLTPMD3.jpg
-
-
     //Fields variables
     private CircleImageView circleProfileImage;
     private EditText username, profileBio;
@@ -69,6 +68,9 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     //loading bar
     private ProgressDialog loading;
 
+    //Android MVVC
+    private WhatsAppDataModel whatsAppDataModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,15 +79,27 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         setUpToolbar();
         initializeFields();
 
+        loadViewModel();
+
 
         updateButton.setOnClickListener(this);
         circleProfileImage.setOnClickListener(this);
     }
 
+    private void loadViewModel() {
+       whatsAppDataModel.getSingleUserDocument(auth.getCurrentUser().getUid())
+       .observe(this, new Observer<Map>() {
+           @Override
+           public void onChanged(Map map) {
+               updateFields(map);
+           }
+       });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        updateUI();
+        loadViewModel();
     }
 
     @Override
@@ -176,7 +190,7 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if(task.isSuccessful())
                                         {
-                                            updateFields();
+
                                             Log.d(TAG, "onComplete: Success upload image uri");
                                         }else{
                                             Log.d(TAG, "onComplete: fail to upload image uri");
@@ -199,58 +213,35 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
 
     private void updateUI() {
         //updates the editable fields like user name user bio etc
-        updateFields();
+
     }
 
 
 
-    private void updateFields()
+    private void updateFields(Map user)
     {
 
-        DocumentReference docRef = db.collection("Users")
-                .document(auth.getCurrentUser().getUid());
+        //update Fields
+        String usernameText = String.valueOf(user.get(FeedDataEntry.USERNAME));
+        String profileBioTExt = String.valueOf(user.get(FeedDataEntry.PROFILE_BIO));
+        String profileImageSrc = (String) user.get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE);
+        username.setText(usernameText);
+        profileBio.setText(profileBioTExt);
 
+        if(profileImageSrc != null)
+        {
+            Picasso.get().load(profileImageSrc).into(circleProfileImage, new Callback() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "onSuccess: profile image");
+                }
 
-                docRef.get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            assert document != null;
-                            if (document.exists()) {
-                                Log.d(TAG, "DocumentSnapshot data: " + document.getData());
-
-                                //update Fields
-                                String usernameText = String.valueOf(document.getData().get(FeedDataEntry.USERNAME));
-                                String profileBioTExt = String.valueOf(document.getData().get(FeedDataEntry.PROFILE_BIO));
-                                String profileImageSrc = (String) document.getData().get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE);
-                                username.setText(usernameText);
-                                profileBio.setText(profileBioTExt);
-
-                                if(profileImageSrc != null)
-                                {
-                                    Picasso.get().load(profileImageSrc).into(circleProfileImage, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            Log.d(TAG, "onSuccess: profile image");
-                                        }
-
-                                        @Override
-                                        public void onError(Exception e) {
-                                            Log.d(TAG, "onError: profile image " + e);
-                                        }
-                                    });
-                                }
-
-                            } else {
-                                Log.d(TAG, "No such document");
-                            }
-                        } else {
-                            Log.d(TAG, "get failed with ", task.getException());
-                        }
-                    }
-                });
+                @Override
+                public void onError(Exception e) {
+                    Log.d(TAG, "onError: profile image " + e);
+                }
+            });
+        }
     }
 
 
@@ -261,6 +252,9 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         username = findViewById(R.id.edit_username);
         profileBio = findViewById(R.id.edit_profile_bio);
         updateButton = findViewById(R.id.settings_update_button);
+
+        //android jetPack viewModel live data component architecture
+        whatsAppDataModel = new ViewModelProvider(this).get(WhatsAppDataModel.class);
     }
 
     private void setUpToolbar() {

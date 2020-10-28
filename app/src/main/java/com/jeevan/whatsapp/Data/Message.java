@@ -4,8 +4,17 @@ public class Message {
     private String message;
     private long timeAdded;
     private String messageAdminId;
+    private String messageType;
 
     public Message(){}
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }
 
     public Message(String message, long timeAdded) {
         this.message = message;
@@ -19,6 +28,8 @@ public class Message {
     public void setMessageAdminId(String messageAdminId) {
         this.messageAdminId = messageAdminId;
     }
+
+
 
     public String getMessage() {
         return message;
