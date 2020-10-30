@@ -79,6 +79,7 @@ public class FindFriendsActivity extends AppCompatActivity {
         whatsAppDataModel.getUsersDocument().observe(this, new Observer<ArrayList<Map>>() {
             @Override
             public void onChanged(ArrayList<Map> usersArrayList) {
+                mDataset.clear();
                 mDataset.addAll(usersArrayList);
                 setUpRecyclerView();
             }

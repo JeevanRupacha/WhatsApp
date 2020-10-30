@@ -222,6 +222,7 @@ public class LoginNumberEditActivity extends AppCompatActivity {
 
     private void sendToMainActivity() {
         startActivity(new Intent(LoginNumberEditActivity.this, MainActivity.class));
+        finish();
     }
 
     private void visibleCodeInput() {

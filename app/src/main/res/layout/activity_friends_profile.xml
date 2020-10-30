@@ -27,7 +27,7 @@
             android:orientation="vertical">
 
             <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/profile_image_settings"
+                android:id="@+id/find_friends_profile_profileImage"
                 android:layout_width="200dp"
                 android:layout_height="200dp"
                 android:layout_gravity="center_horizontal"
@@ -56,12 +56,12 @@
                 android:textSize="16sp" />
 
             <Button
-                android:id="@+id/request_friend_button"
+                android:id="@+id/message_friend_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
                 android:background="@color/colorPrimary"
-                android:text="send request"
+                android:text="@string/message"
                 android:textColor="@color/colorAccent"
                 android:textSize="16sp" />
 

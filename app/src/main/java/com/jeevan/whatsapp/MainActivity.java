@@ -32,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.jeevan.whatsapp.Activities.FindFriendsActivity;
 import com.jeevan.whatsapp.Activities.LoginActivity;
 import com.jeevan.whatsapp.Activities.LoginPhoneNumberActivity;
@@ -140,8 +141,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void createUserData()
     {
+        UserProfile userProfile = new UserProfile();
+        userProfile.setUserPhoneNumber(firebaseAuth.getCurrentUser().getPhoneNumber());
         db.collection("Users").document(firebaseAuth.getCurrentUser().getUid())
-                .set(new UserProfile())
+                .set(userProfile, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {

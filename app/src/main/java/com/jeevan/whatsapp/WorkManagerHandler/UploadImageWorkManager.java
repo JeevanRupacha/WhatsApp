@@ -2,7 +2,6 @@ package com.jeevan.whatsapp.WorkManagerHandler;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -10,12 +9,15 @@ import androidx.work.WorkerParameters;
 
 import com.jeevan.whatsapp.Activities.SettingActivity;
 
-public class MainWorkManager extends Worker {
+public class UploadImageWorkManager extends Worker {
 
-    private static final String TAG = MainWorkManager.class.getSimpleName();
+    private static final String TAG = UploadImageWorkManager.class.getSimpleName();
 
-    public MainWorkManager(@NonNull Context context,
-                           @NonNull WorkerParameters workerParams) {
+    private SettingActivity settingActivity = new SettingActivity();
+
+
+    public UploadImageWorkManager(@NonNull Context context,
+                                  @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
@@ -23,6 +25,10 @@ public class MainWorkManager extends Worker {
     @Override
     public Result doWork() {
 
+//        new SettingActivity().uploadProfileImage();
+
         return Result.success();
     }
+
+
 }

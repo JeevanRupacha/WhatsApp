@@ -94,7 +94,7 @@
         <RelativeLayout
             android:layout_below="@+id/create_add_group"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:gravity="center">
 
             <androidx.recyclerview.widget.RecyclerView

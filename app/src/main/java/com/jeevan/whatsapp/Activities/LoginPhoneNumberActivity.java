@@ -30,6 +30,7 @@ public class LoginPhoneNumberActivity extends AppCompatActivity {
 
     private void sendToLoginNumberEdit() {
         startActivity(new Intent(LoginPhoneNumberActivity.this, LoginNumberEditActivity.class));
+        finish();
     }
 
     private void initializeFields() {

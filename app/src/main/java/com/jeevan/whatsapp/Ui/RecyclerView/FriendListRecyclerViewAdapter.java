@@ -2,22 +2,18 @@ package com.jeevan.whatsapp.Ui.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.jeevan.whatsapp.Activities.FriendsProfileActivity;
-import com.jeevan.whatsapp.Activities.GroupMessageActivity;
 import com.jeevan.whatsapp.Data.FeedDataEntry;
 import com.jeevan.whatsapp.R;
 import com.squareup.picasso.Picasso;
@@ -25,7 +21,6 @@ import com.squareup.picasso.Picasso;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -33,7 +28,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class FriendListRecyclerViewAdapter extends RecyclerView.Adapter<FriendListRecyclerViewAdapter.MyViewHolder> implements Serializable {
 
 
-    private final static String TAG = "FreindListReAdapter";
+    private final static String TAG = "FriendListReAdapter";
 
     private ArrayList<Map> dataList;
     private Context context;
@@ -57,24 +52,26 @@ public class FriendListRecyclerViewAdapter extends RecyclerView.Adapter<FriendLi
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
-        holder.username.setText((String) dataList.get(position).get("username"));
-        holder.userBio.setText((String) dataList.get(position).get("profileBio"));
 
-        String profileImageSrc =String.valueOf(dataList.get(position).get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE));
+        if(dataList.get(position).get("userID") != null && !dataList.get(position).get("userID").equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
 
-        Log.d(TAG, "onBindViewHolder: " + profileImageSrc);
+            holder.username.setText((String) dataList.get(position).get("username"));
+            holder.userBio.setText((String) dataList.get(position).get("profileBio"));
 
-        if(profileImageSrc != null)
-        {
-            Picasso.get().load(profileImageSrc).into(holder.profileImage);
+            String profileImageSrc = String.valueOf(dataList.get(position).get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE));
+
+            Log.d(TAG, "onBindViewHolder: " + profileImageSrc);
+
+            Picasso.get().load(profileImageSrc).placeholder(R.drawable.profile).into(holder.profileImage);
+
+            holder.linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sendToFriendProfileActivity(dataList.get(position));
+                }
+            });
+
         }
-
-        holder.linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendToFriendProfileActivity(dataList.get(position));
-            }
-        });
 
     }
 
@@ -87,7 +84,6 @@ public class FriendListRecyclerViewAdapter extends RecyclerView.Adapter<FriendLi
 
     @Override
     public int getItemCount() {
-        Log.d(TAG, "getItemCount: " + dataList.size());
         if(dataList == null) {
             return 0;
         }else {

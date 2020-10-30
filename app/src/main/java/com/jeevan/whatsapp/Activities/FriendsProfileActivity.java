@@ -5,6 +5,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -13,9 +14,13 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.jeevan.whatsapp.Data.FeedDataEntry;
 import com.jeevan.whatsapp.R;
+import com.squareup.picasso.Picasso;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -29,7 +34,7 @@ public class FriendsProfileActivity extends AppCompatActivity {
     //Fields variables
     private TextView username, userBio;
     private CircleImageView profileImage;
-    private Button requestButton;
+    private Button messageButton;
 
     //intent passes value in form map
     private HashMap<String, String> hashMap;
@@ -50,17 +55,26 @@ public class FriendsProfileActivity extends AppCompatActivity {
         retrieveUsersData();
         updateUI();
 
-        requestButton.setOnClickListener(new View.OnClickListener() {
+        messageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                sendToPrivateMessageActivity(hashMap);
             }
         });
+    }
+
+    private void sendToPrivateMessageActivity(Map map) {
+        Intent intent = new Intent(this, PrivateMessageActivity.class);
+        intent.putExtra("hashMap", (Serializable) map);
+        this.startActivity(intent);
     }
 
     private void updateUI() {
         username.setText(hashMap.get("username"));
         userBio.setText(hashMap.get("profileBio"));
+        if(hashMap.get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE) != null ){
+            Picasso.get().load(hashMap.get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE)).into(profileImage);
+        }
     }
 
 
@@ -68,8 +82,8 @@ public class FriendsProfileActivity extends AppCompatActivity {
     {
         username = findViewById(R.id.friends_profile_username);
         userBio = findViewById(R.id.friends_profile_bio);
-        profileImage = findViewById(R.id.user_image_find_friends_list);
-        requestButton = findViewById(R.id.request_friend_button);
+        profileImage = findViewById(R.id.find_friends_profile_profileImage);
+        messageButton = findViewById(R.id.message_friend_button);
 
         Intent intent = getIntent();
        hashMap = (HashMap<String, String>)intent.getSerializableExtra("hashMap");

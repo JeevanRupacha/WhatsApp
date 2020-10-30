@@ -6,11 +6,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-
+import androidx.work.Constraints;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -26,17 +30,16 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.jeevan.whatsapp.Data.FeedDataEntry;
-import com.jeevan.whatsapp.Data.UserProfile;
 import com.jeevan.whatsapp.MainActivity;
 import com.jeevan.whatsapp.R;
 import com.jeevan.whatsapp.WhatsAppMVVC.WhatsAppDataModel;
+import com.jeevan.whatsapp.WorkManagerHandler.UploadImageWorkManager;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -70,6 +73,9 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
 
     //Android MVVC
     private WhatsAppDataModel whatsAppDataModel;
+
+    //uploading profile image in database
+    private CropImage.ActivityResult result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,20 +125,30 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         }
 
 
-        //library activity check
+        //crop image library activity check
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+             result = CropImage.getActivityResult(data);
 
             if(resultCode == RESULT_OK)
             {
-                loadingBar();
-                uploadImage(result);
+                UploadImageAsyncTask uploadImageAsyncTask = new UploadImageAsyncTask();
+                uploadImageAsyncTask.execute();
 
+//                Constraints.Builder constraintsBuilder = new Constraints.Builder();
+//                constraintsBuilder.setRequiredNetworkType(NetworkType.CONNECTED).build();
+//
+//                WorkRequest uploadWorkRequest =
+//                        new OneTimeWorkRequest.Builder(UploadImageWorkManager.class)
+//                                .setConstraints(constraintsBuilder)
+//                                .build();
+//                WorkManager
+//                        .getInstance(this)
+//                        .enqueue(uploadWorkRequest);
             }
         }
     }
 
-    private void uploadImage(CropImage.ActivityResult result)
+    public final void uploadProfileImage()
     {
         Uri resultUri = result.getUri();
         final StorageReference filePath = profileImageStorageRef.child(auth.getCurrentUser().getUid() +".jpg");
@@ -198,11 +214,11 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                                     }
                                 });
 
-                        if(loading != null)
-                        {
-                            loading.dismiss();
-                        }
-                        Toast.makeText(SettingActivity.this, "Success", Toast.LENGTH_SHORT).show();
+//                        if(loading != null)
+//                        {
+//                            loading.dismiss();
+//                        }
+
                     }
                 });
             }
@@ -223,10 +239,11 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
 
         //update Fields
         String usernameText = String.valueOf(user.get(FeedDataEntry.USERNAME));
-        String profileBioTExt = String.valueOf(user.get(FeedDataEntry.PROFILE_BIO));
-        String profileImageSrc = (String) user.get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE);
+        String profileBioText = String.valueOf(user.get(FeedDataEntry.PROFILE_BIO));
+        String profileImageSrc = String.valueOf(user.get(FeedDataEntry.PROFILE_IMAGE_CIRCLE_SOURCE));
         username.setText(usernameText);
-        profileBio.setText(profileBioTExt);
+
+        profileBio.setText(profileBioText);
 
         if(profileImageSrc != null)
         {
@@ -301,7 +318,6 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void updateUserProfile() {
-        UserProfile userProfile = new UserProfile();
 
         String usernameMap = username.getText().toString();
         String profileBioMap = profileBio.getText().toString();
@@ -339,6 +355,16 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         loading.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         loading.setTitle("Wait..");
         loading.show();
+    }
+
+
+    public class UploadImageAsyncTask extends AsyncTask<Void, Void,Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            uploadProfileImage();
+            return null;
+        }
     }
 
 

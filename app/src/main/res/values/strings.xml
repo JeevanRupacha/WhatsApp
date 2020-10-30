@@ -29,4 +29,5 @@
     <string name="friend_lists">Friend List</string>
     <string name="report">report</string>
     <string name="leave_group">leave group</string>
+    <string name="message">Message</string>
 </resources>

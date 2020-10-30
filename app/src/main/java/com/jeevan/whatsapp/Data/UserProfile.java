@@ -10,6 +10,7 @@ public class UserProfile {
     private String profileBio ="User Bio";
     private long timeAccountCreated;
     private String userID;
+    private String userPhoneNumber;
     private List<String> groupList = new ArrayList<>();
 
 
@@ -18,6 +19,14 @@ public class UserProfile {
 
     }
 
+
+    public String getUserPhoneNumber() {
+        return userPhoneNumber;
+    }
+
+    public void setUserPhoneNumber(String userPhoneNumber) {
+        this.userPhoneNumber = userPhoneNumber;
+    }
 
     public List<String> getGroupList() {
         return groupList;

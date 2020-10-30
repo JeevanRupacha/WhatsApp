@@ -113,7 +113,6 @@ public class RegisterAccount extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
                             FirebaseUser user = firebaseAuth.getCurrentUser();
-                            updateDatabase();
                             updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -182,13 +181,6 @@ public class RegisterAccount extends AppCompatActivity {
                     }
                 });
         return userName[0];
-    }
-
-    private void updateDatabase()
-    {
-        //TODO this is not implemented because in this project
-        //I am not getting other information like name , address etc
-        //if any then update user information schema in  here
     }
 
     private void sendToLoginActivity() {

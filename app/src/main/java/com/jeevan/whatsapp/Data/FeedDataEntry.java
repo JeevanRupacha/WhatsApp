@@ -18,6 +18,8 @@ public class FeedDataEntry {
     public static final String MEMBERS = "members";
     public static final String MESSAGE = "message";
     public static final String MESSAGE_ADMIN_ID = "messageAdminId";
+    public static final Object CONTACT_NAME = "contact_name";
+    public static final Object CONTACT_NUMBER = "contact_number";
 
 
     private FeedDataEntry(){}
