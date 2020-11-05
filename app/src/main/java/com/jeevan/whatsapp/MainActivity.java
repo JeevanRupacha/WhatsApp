@@ -6,20 +6,13 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
-
-import android.app.Activity;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -29,14 +22,12 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.jeevan.whatsapp.Activities.FindFriendsActivity;
 import com.jeevan.whatsapp.Activities.LoginActivity;
 import com.jeevan.whatsapp.Activities.LoginPhoneNumberActivity;
-import com.jeevan.whatsapp.Activities.RegisterAccount;
 import com.jeevan.whatsapp.Activities.SettingActivity;
 import com.jeevan.whatsapp.Data.UserProfile;
 import com.jeevan.whatsapp.Fragments.ChatFragment;
@@ -142,7 +133,18 @@ public class MainActivity extends AppCompatActivity {
     private void createUserData()
     {
         UserProfile userProfile = new UserProfile();
-        userProfile.setUserPhoneNumber(firebaseAuth.getCurrentUser().getPhoneNumber());
+        userProfile.setUserID(firebaseAuth.getCurrentUser().getUid());
+        String number = firebaseAuth.getCurrentUser().getPhoneNumber();
+        String email = firebaseAuth.getCurrentUser().getEmail();
+        if(number != null && !TextUtils.isEmpty(number))
+        {
+            userProfile.setUserPhoneNumber(number.substring(4));
+        }
+        if(email != null)
+        {
+            userProfile.setEmailAddress(email);
+        }
+
         db.collection("Users").document(firebaseAuth.getCurrentUser().getUid())
                 .set(userProfile, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -153,8 +155,9 @@ public class MainActivity extends AppCompatActivity {
                         /**
                          * send to setting actvity to fill user info if user if first time
                          * here signed in
+                         * sendToSettingActivity();
                          */
-                        sendToSettingActivity();
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -217,11 +220,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendToLogin()
     {
-        sendToEmailLogin();
+        sendToNumberLogin();
     }
 
     private void sendToNumberLogin() {
         startActivity(new Intent(MainActivity.this, LoginPhoneNumberActivity.class));
+        finish();
     }
 
     private void sendToEmailLogin() {
@@ -267,29 +271,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(MainActivity.this, SettingActivity.class));
     }
 
-    //gradient background for status bar
-    public void setGradientStatusBar(Activity activity)
-    {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-           Window window = activity.getWindow();
-            Drawable background = activity.getResources().getDrawable(R.drawable.app_bar_gradient_theme);
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(activity.getResources().getColor(android.R.color.transparent));
-            window.setNavigationBarColor(activity.getResources().getColor(android.R.color.transparent));
-            window.setBackgroundDrawable(background);
-        }
-    }
+
 
     @Override
     public void onBackPressed() {
-        if (viewPager.getCurrentItem() == 0) {
-            // If the user is currently looking at the first step, allow the system to handle the
-            // Back button. This calls finish() on this activity and pops the back stack.
-            super.onBackPressed();
-        } else {
-            // Otherwise, select the previous step.
-            viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
-        }
+       super.onBackPressed();
     }
 }

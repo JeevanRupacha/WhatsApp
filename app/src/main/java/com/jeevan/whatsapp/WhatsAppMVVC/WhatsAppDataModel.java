@@ -82,30 +82,6 @@ public class WhatsAppDataModel extends ViewModel {
                               DocumentReference docRef = db.collection("Groups")
                                       .document(documentUser.getId());
 
-                              /**
-                               * using addCompleteListener
-                               */
-//                                      docRef.get()
-//                                              .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                                                  @Override
-//                                                  public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                                                      if(task.isSuccessful())
-//                                                      {
-//                                                          DocumentSnapshot value = task.getResult();
-//                                                          if(value.exists())
-//                                                          {
-//                                                              Map<String, String > data = new HashMap<>();
-//                                                              data.put("type", "group");
-//                                                              data.put("title",(String) value.getData().get(FeedDataEntry.GROUP_TITLE));
-//                                                              data.put("groupId", (String) value.getData().get(FeedDataEntry.GROUP_ID));
-//
-//                                                              mDataset.add(data);
-//                                                              Log.d(TAG, "onComplete: "+ value.getData());
-//                                                          }
-//                                                      }
-//                                                  }
-//                                              });
-
 
                                       docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                                           @Override
@@ -142,9 +118,18 @@ public class WhatsAppDataModel extends ViewModel {
                                               if(value.exists())
                                               {
                                                   HashMap<String, String> data = new HashMap<>();
+
+                                                  String profileImage = null;
+                                                  try {
+                                                    profileImage=(String) value.getData().get("profileImageSrc");
+                                                  }catch (Exception e)
+                                                  {
+                                                      Log.d(TAG, "onEvent: " + e);
+                                                  }
+
+                                                  data.put("profileImageSrc", profileImage);
                                                   data.put("type", "private");
                                                   data.put("username",(String) value.getData().get(FeedDataEntry.USERNAME));
-                                                  data.put("profileImageSrc", (String) value.getData().get("profileImageSrc"));
                                                   data.put("userID", (String) value.getData().get("userID"));
                                                   mDataset.add(data);
                                                   allUsersWithMessages.postValue(mDataset);

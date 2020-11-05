@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/private_message_rootView"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -15,65 +16,60 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <include
-            android:id="@+id/group_activity_app_bar"
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/private_chat_app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            layout="@layout/app_bar_layout" />
+            android:background="@color/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            >
 
-        <ScrollView
-            android:id="@+id/group_message_scrollView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+          <RelativeLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center">
 
-            <LinearLayout
-                android:id="@+id/middle_message_layout"
-                android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:paddingBottom="8dp"
-                android:layout_height="wrap_content"
-                android:focusable="true"
-                android:focusableInTouchMode="true">
+              <LinearLayout
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_centerVertical="true"
+                  android:orientation="vertical">
+                  <TextView
+                      android:id="@+id/username_app_bar"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:gravity="center"
+                      android:textSize="20sp"
+                      android:text=""/>
 
-                <TextView
-                    android:id="@+id/messageTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="" />
-            </LinearLayout>
+                  <TextView
+                      android:id="@+id/phoneNumber_app_bar"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:textSize="16sp"
+                      android:text=""/>
+              </LinearLayout>
 
-        </ScrollView>
 
-        <LinearLayout
-            android:id="@+id/input_message_bar_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:gravity="center_vertical">
 
-            <EditText
-                android:id="@+id/input_message_editText_group"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Enter message"
-                android:fontFamily="@font/roboto"
-                android:inputType="textAutoCorrect"/>
+              <de.hdodenhof.circleimageview.CircleImageView
+                  android:id="@+id/user_profile_image_app_bar"
+                  android:layout_width="50dp"
+                  android:layout_height="50dp"
+                  android:layout_alignParentEnd="true"
+                  android:src="@drawable/profile"
+                  android:layout_margin="8dp"/>
+          </RelativeLayout>
+        </androidx.appcompat.widget.Toolbar>
 
-            <ImageButton
-                android:id="@+id/send_message_button_group"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:tint="@color/colorPrimary"
-                android:scaleType="centerInside"
-                android:background="@drawable/circle_background"
-                android:src="@drawable/ic_baseline_send_24"
-                tools:src="@drawable/ic_baseline_send_24"
-                />
 
-        </LinearLayout>
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/private_message_recyclerView"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_weight="1"/>
+
+        <include layout="@layout/message_input_layout"/>
 
     </LinearLayout>
 

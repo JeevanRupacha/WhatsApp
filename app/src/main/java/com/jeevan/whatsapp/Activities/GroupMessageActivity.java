@@ -1,7 +1,6 @@
 package com.jeevan.whatsapp.Activities;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -9,24 +8,23 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -34,39 +32,50 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.jeevan.whatsapp.Data.FeedDataEntry;
 import com.jeevan.whatsapp.Data.Message;
-import com.jeevan.whatsapp.Firestore.MyFirestore;
 import com.jeevan.whatsapp.MainActivity;
 import com.jeevan.whatsapp.R;
-
-import org.w3c.dom.Document;
+import com.jeevan.whatsapp.Ui.RecyclerView.PrivateMessageListRecyclerViewAdapter;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import hani.momanii.supernova_emoji_library.Actions.EmojIconActions;
+import hani.momanii.supernova_emoji_library.Helper.EmojiconEditText;
 
 public class GroupMessageActivity extends AppCompatActivity implements View.OnClickListener {
 
+
     //local variables
-    private String groupName , groupId;
+    private static String groupName , groupId;
+    private boolean retrievedMessage;
+
+    private boolean isRetrievedMessage = false;
 
     //Log debug
     private static final String TAG = "GroupActivity";
 
     //Fields variables
-    private EditText inputMessage;
+    private EmojiconEditText inputMessage;
     private ImageButton sendButton;
-    private TextView messageTextView;
-    private ScrollView scrollView;
+    private ImageButton emojiToggleButton;
+    private EmojIconActions emojIconActions;
+    private ConstraintLayout rootView;
+
+
+    //Fields variables
+    private RecyclerView recyclerView;
+    private PrivateMessageListRecyclerViewAdapter mAdapter;
 
 
     /**
      * Firebase Firestore setup
      */
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     /**
      * Firebase Firestore
@@ -82,6 +91,10 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
 
         sendButton.setOnClickListener(this);
 
+        //emmoji library to show input emoji
+        emojIconActions = new EmojIconActions(this,rootView,inputMessage,emojiToggleButton);
+        emojIconActions.ShowEmojIcon();
+
     }
 
     @Override
@@ -90,16 +103,45 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
         retrieveMessage(groupId);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(isRetrievedMessage)
+        {
+            deleteMessageAfterSeen();
+        }
+
+        //TODO delete all message id retrievedMessage is true
+    }
+
     private void initializeFields(){
-        inputMessage = findViewById(R.id.input_message_editText_group);
+        inputMessage = findViewById(R.id.emojiEditText);
         sendButton = findViewById(R.id.send_message_button_group);
-        messageTextView = findViewById(R.id.messageTextView);
-        scrollView = findViewById(R.id.group_message_scrollView);
+        recyclerView = findViewById(R.id.group_message_recyclerView);
+        emojiToggleButton = findViewById(R.id.emoji_toggle_button);
+        rootView = findViewById(R.id.group_message_root_view);
+
 
         //getting the data passed through the intent activity
         groupName = getIntent().getStringExtra(FeedDataEntry.GROUP_TITLE);
         groupId = getIntent().getStringExtra(FeedDataEntry.GROUP_ID);
         Log.d(TAG, "setUpToolbar: " + groupName + " and group id " + groupId);
+    }
+
+
+    private void setUpRecyclerView(ArrayList<Map> mDataset) {
+
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        // specify an adapter (see also next example)
+        Log.d(TAG, "setUpRecyclerView: "+ mDataset);
+        mAdapter = new PrivateMessageListRecyclerViewAdapter(mDataset, "group",this);
+        mAdapter.notifyDataSetChanged();
+        recyclerView.setAdapter(mAdapter);
     }
 
 
@@ -209,7 +251,10 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
     }
 
     private void retrieveMessage(String messageId) {
-        messageTextView.clearComposingText();
+
+        final ArrayList<Map> mDataset = new ArrayList<>();
+
+
         DocumentReference docRef = db.collection("MessagesCollection")
                 .document(firebaseAuth.getCurrentUser().getUid())
                 .collection("MyMessages")
@@ -228,11 +273,16 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
 
                         for(DocumentChange dc: value.getDocumentChanges())
                         {
-                            messageTextView.append("\n" +(CharSequence) dc.getDocument().getData().get(FeedDataEntry.MESSAGE) + " \n" +
-                                    (CharSequence) dc.getDocument().getData().get(FeedDataEntry.MESSAGE_ADMIN_ID));
+                            HashMap<String, Object> data = new HashMap<>();
+                            data.putAll(dc.getDocument().getData());
+                            data.put("messageKey",dc.getDocument().getId());
 
-                            Log.d(TAG, "onEvent: " + dc.getDocument().getData());
+                            mDataset.add(data);
                         }
+
+                        isRetrievedMessage = true;
+
+                        setUpRecyclerView(mDataset);
 
                         /**
                          * https://stackoverflow.com/questions/5101448/android-auto-scrolling-down-the-edittextview-for-chat-apps
@@ -240,12 +290,17 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
                          * Auto scroll when message is changed
                          */
                         //TODO fix auto scroll when message is not seen
-                        scrollView.setSmoothScrollingEnabled(true);
-                        scrollView.post(new Runnable() {
+                        recyclerView.post(new Runnable() {
+                            @Override
                             public void run() {
-                                scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                                // Call smooth scroll
+                                if(mAdapter.getItemCount() >0)
+                                {
+                                    recyclerView.smoothScrollToPosition(mAdapter.getItemCount());
+                                }
                             }
                         });
+
                         /**
                          * close
                          */
@@ -274,8 +329,14 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
         String msg = inputMessage.getText().toString().trim();
         message.setMessage(msg);
         message.setMessageType("text");
-        message.setTimeAdded(System.currentTimeMillis());
+
+
         message.setMessageAdminId(firebaseAuth.getCurrentUser().getUid());
+
+        Timestamp timestamp = Timestamp.now();
+        Long millis = timestamp.getSeconds()*1000;
+
+        message.setTimeAdded(millis);
 
         /**
          * First retrieve the member in group document and
@@ -291,6 +352,8 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
     }
 
     public void saveMessages(final String messageId, final Message message) {
+        final String messageUniqueID = UUID.randomUUID().toString().replaceAll("-", "");
+
 
         /**
          * First you have to loop all the group members
@@ -313,7 +376,7 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
 
                                 for (String memberId : membersId)
                                 {
-                                    saveMessageToMembers(memberId, messageId, message);
+                                    saveMessageToMembers(memberId,messageUniqueID, messageId, message);
                                 }
 
                             }
@@ -331,18 +394,20 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
 
     }
 
-    private void saveMessageToMembers(String userId, String messageId, Message message)
+    private void saveMessageToMembers(String userId, String messageUniqueID, final String messageId, Message message)
     {
         db.collection("MessagesCollection")
                 .document(userId)
                 .collection("MyMessages")
                 .document(messageId)
                 .collection("Messages")
-                .add(message)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                .document(messageUniqueID)
+                .set(message)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "onSuccess: saved message in message document ");
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "onSuccess: saved message to user "+messageId);
+                        //Show message is sent
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -376,10 +441,92 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
                 });
     }
 
+    public static void deleteMessage(final String messageKey)
+    {
+        /**
+         * First get the user Id of members who are associated with the group
+         * and delete the all message from all the users
+         */
+
+        db.collection("Groups")
+                .document(groupId)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful())
+                        {
+                            DocumentSnapshot snapshot = task.getResult();
+                            if(snapshot.exists())
+                            {
+                                ArrayList<String> membersId = (ArrayList<String>) snapshot.getData().get("members");
+
+                                for (String memberId : membersId)
+                                {
+                                    deleteMessageFromAllMember(memberId,groupId,messageKey);
+                                }
+
+                            }
+                        }else{
+                            Log.d(TAG, "onComplete: fail to get task" );
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: " + e);
+            }
+        });
+    }
+
+    private static void deleteMessageFromAllMember(String memberId,String groupId, String messageId)
+    {
+        DocumentReference docRef = db.collection("MessagesCollection")
+                .document(memberId)
+                .collection("MyMessages")
+                .document(groupId)
+                .collection("Messages")
+                .document(messageId);
+
+        docRef.delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+
+                        Log.d(TAG, "onSuccess: Success to delete the message " );
+                    }
+                });
+    }
+
 
     private void sentToMainActivity() {
         Intent intent = new Intent(GroupMessageActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private void deleteMessageAfterSeen()
+    {
+        DocumentReference docRef = db.collection("MessagesCollection")
+                .document(firebaseAuth.getCurrentUser().getUid())
+                .collection("MyMessages")
+                .document(groupId);
+
+        docRef.collection("Messages")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful())
+                        {
+                            for(DocumentSnapshot snapshot : task.getResult())
+                            {
+                                    deleteMessage(snapshot.getId());
+                            }
+                        }else{
+                            Log.d(TAG, "onComplete: fail to get data");
+                        }
+                    }
+                });
     }
 }

@@ -9,10 +9,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,49 +17,64 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.jeevan.whatsapp.Data.FeedDataEntry;
 import com.jeevan.whatsapp.Data.Message;
 import com.jeevan.whatsapp.Firestore.MyFirestore;
 import com.jeevan.whatsapp.MainActivity;
 import com.jeevan.whatsapp.R;
+import com.jeevan.whatsapp.Ui.RecyclerView.PrivateMessageListRecyclerViewAdapter;
+import com.jeevan.whatsapp.WhatsAppMVVC.WhatsAppDataModel;
+import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.UUID;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+import hani.momanii.supernova_emoji_library.Actions.EmojIconActions;
+import hani.momanii.supernova_emoji_library.Helper.EmojiconEditText;
 
 public class PrivateMessageActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private static PrivateMessageActivity INSTANCE = null;
 
     /**
      * Local variables
      * the id here is not my own id but id to who send message
      */
 
-    private String receiverName , receiverId;
+    private static String receiverName , receiverId;
+    private String receivedMessageProfileImage;
+    private boolean retrievedMessageStatus = false;
 
     //Log debug
     private static final String TAG = "PrivateMessageActivity";
 
     //Fields variables
-    private EditText inputMessage;
     private ImageButton sendButton;
-    private TextView messageTextView;
-    private ScrollView scrollView;
+    private ImageButton emojiToggleButton, photoInputButton;
+    private EmojIconActions emojIconActions;
+    private EmojiconEditText inputMessage;
+    private ConstraintLayout rootView;
 
     private HashMap<String, String> hashMap;
 
@@ -70,11 +82,26 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
     /**
      * Firebase Firestore setup
      */
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    private  FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private  FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     /**
      * Firebase Firestore
      */
+
+    //Fields variables
+    private RecyclerView recyclerView;
+    private PrivateMessageListRecyclerViewAdapter mAdapter;
+
+
+    public static PrivateMessageActivity getInstance()
+    {
+        if(INSTANCE == null)
+        {
+            INSTANCE = new PrivateMessageActivity();
+        }
+
+        return INSTANCE;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,24 +109,41 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
         setContentView(R.layout.activity_private_message);
 
         initializeFields();
+
         setUpToolbar();
 
+
         sendButton.setOnClickListener(this);
+        emojiToggleButton.setOnClickListener(this);
+        photoInputButton.setOnClickListener(this);
+
+        emojIconActions = new EmojIconActions(this,rootView,inputMessage,emojiToggleButton);
+        emojIconActions.ShowEmojIcon();
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        retrieveMessage(receiverId);
-
+        new AsyncTaskBack().execute();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(retrievedMessageStatus)
+        {
+            deleteMessageAfterSeen();
+        }
+    }
 
     private void initializeFields(){
-        inputMessage = findViewById(R.id.input_message_editText_group);
+        inputMessage = findViewById(R.id.emojiEditText);
         sendButton = findViewById(R.id.send_message_button_group);
-        messageTextView = findViewById(R.id.messageTextView);
-        scrollView = findViewById(R.id.group_message_scrollView);
+        recyclerView = findViewById(R.id.private_message_recyclerView);
+        emojiToggleButton = findViewById(R.id.emoji_toggle_button);
+        photoInputButton = findViewById(R.id.image_button_input);
+        rootView = findViewById(R.id.private_message_rootView);
 
         Intent intent = getIntent();
         hashMap = (HashMap<String, String>)intent.getSerializableExtra("hashMap");
@@ -107,14 +151,42 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
         //getting the data passed through the intent activity
         receiverName = hashMap.get("username");
         receiverId = hashMap.get("userID");
+        receivedMessageProfileImage = hashMap.get("profileImageSrc");
+
+    }
+
+    private void setUpRecyclerView(ArrayList<Map> mDataset) {
+
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        // specify an adapter (see also next example)
+        Log.d(TAG, "setUpRecyclerView: "+ mDataset);
+        mAdapter = new PrivateMessageListRecyclerViewAdapter(mDataset, receivedMessageProfileImage,this);
+        mAdapter.notifyDataSetChanged();
+        recyclerView.setAdapter(mAdapter);
     }
 
 
 
     private void setUpToolbar() {
+        Toolbar toolbar =  findViewById(R.id.private_chat_app_bar);
+        TextView username = toolbar.findViewById(R.id.username_app_bar);
+        TextView phoneNumber = toolbar.findViewById(R.id.phoneNumber_app_bar);
+        CircleImageView profileImage = toolbar.findViewById(R.id.user_profile_image_app_bar);
 
-        Toolbar toolbar =  findViewById(R.id.group_activity_app_bar);
-        toolbar.setTitle(receiverName);
+        if(getIntent().getStringExtra("phoneNumber") != null)
+        {
+            username.setText(getIntent().getStringExtra("contactName"));
+            phoneNumber.setText(getIntent().getStringExtra("phoneNumber"));
+        }else{
+            username.setText(receiverName);
+        }
+
+        Picasso.get().load(receivedMessageProfileImage).placeholder(R.drawable.profile).into(profileImage);
         setSupportActionBar(toolbar);
 
         if(getSupportActionBar() != null)
@@ -125,12 +197,7 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.group_menu, menu);
-        return true;
-    }
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -139,8 +206,6 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
         switch (item.getItemId())
         {
             case android.R.id.home : goBackToHome();
-                break;
-            case R.id.report: report();
                 break;
             default:break;
         }
@@ -151,10 +216,6 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
 
 
 
-    private void report()
-    {
-        Toast.makeText(this, "report", Toast.LENGTH_SHORT).show();
-    }
 
     private void goBackToHome()
     {
@@ -170,21 +231,33 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
         {
             case R.id.send_message_button_group :sendMessage(receiverId);
                 break;
+            case R.id.image_button_input : imageButtonToggle();
+            break;
             default:break;
         }
     }
 
+    private void imageButtonToggle() {
 
-    private void retrieveMessage(String messageId) {
+    }
 
+
+    private void retrieveMessage() {
+
+        String messageId = receiverId;
         /**
          * Here messageId is receiverId which is for identify message
          */
 
+        final ArrayList<Map> mDataset = new ArrayList<>();
+
+        mDataset.clear();
         DocumentReference docRef = db.collection("MessagesCollection")
                 .document(firebaseAuth.getCurrentUser().getUid())
                 .collection("MyMessages")
                 .document(messageId);
+
+
 
         docRef.collection("Messages")
                 .orderBy("timeAdded")
@@ -199,11 +272,22 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
 
                         for(DocumentChange dc: value.getDocumentChanges())
                         {
-                            messageTextView.append("\n" +(CharSequence) dc.getDocument().getData().get(FeedDataEntry.MESSAGE) + " \n" +
-                                    (CharSequence) dc.getDocument().getData().get(FeedDataEntry.MESSAGE_ADMIN_ID));
+                            HashMap<String, Object> data = new HashMap<>();
+                            data.putAll(dc.getDocument().getData());
+                            data.put("messageKey",dc.getDocument().getId());
+                            data.put("receiverId", receiverId);
 
-                            Log.d(TAG, "onEvent: " + dc.getDocument().getData());
+                            if( !TextUtils.isEmpty(dc.getDocument().getId()))
+                            {
+                                mDataset.add(data);
+                                Log.d(TAG, "onEvent: e " + dc.getDocument().getData());
+                            }
                         }
+
+                        Log.d(TAG, "onEvent: a "+ mDataset);
+                        setUpRecyclerView(mDataset);
+                        retrievedMessageStatus = true;
+
 
                         /**
                          * https://stackoverflow.com/questions/5101448/android-auto-scrolling-down-the-edittextview-for-chat-apps
@@ -211,10 +295,15 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
                          * Auto scroll when message is changed
                          */
                         //TODO fix auto scroll when message is not seen
-                        scrollView.setSmoothScrollingEnabled(true);
-                        scrollView.post(new Runnable() {
+
+                        recyclerView.post(new Runnable() {
+                            @Override
                             public void run() {
-                                scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                                // Call smooth scroll
+                                if(mAdapter.getItemCount() >0)
+                                {
+                                recyclerView.smoothScrollToPosition(mAdapter.getItemCount());
+                                }
                             }
                         });
                         /**
@@ -233,6 +322,9 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
     private void clearInputFields() {
         //clears all the input fields after the massage send
         inputMessage.setText("");
+        inputMessage.clearFocus();
+        inputMessage.requestFocus();
+        inputMessage.setCursorVisible(true);
     }
 
     private void saveMessageInDocument(String messageId) {
@@ -245,8 +337,12 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
         String msg = inputMessage.getText().toString().trim();
         message.setMessage(msg);
         message.setMessageType("text");
-        message.setTimeAdded(System.currentTimeMillis());
         message.setMessageAdminId(firebaseAuth.getCurrentUser().getUid());
+
+        Timestamp timestamp = Timestamp.now();
+        Long millis = timestamp.getSeconds()*1000;
+
+        message.setTimeAdded(millis);
 
         /**
          * Save message in both users
@@ -260,22 +356,34 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
 
     }
 
+
+
+
     public void saveMessages(String messageId, Message message) {
-        //here messageId is receiver's id
-        saveMessage(messageId,firebaseAuth.getCurrentUser().getUid(), message);
-        saveMessage(firebaseAuth.getCurrentUser().getUid(),messageId, message);
+
+        String messageUniqueID = UUID.randomUUID().toString().replaceAll("-","");
+        /**  here messageId is receiver's id
+         * Save the message in both user
+         * first to user who send the message
+         * and save to whom the message is sent
+         * Remember to delete message you have to go both user to detele for every one
+         *
+         */
+        saveMessage(messageId,firebaseAuth.getCurrentUser().getUid(), message, messageUniqueID);
+        saveMessage(firebaseAuth.getCurrentUser().getUid(),messageId, message,messageUniqueID);
     }
 
-    private void saveMessage(String receiverId, String senderId, Message message) {
+    private void saveMessage(String receiverId, String senderId, Message message,String messageUniqueID) {
         db.collection("MessagesCollection")
                 .document(receiverId)
                 .collection("MyMessages")
                 .document(senderId)
                 .collection("Messages")
-                .add(message)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                .document(messageUniqueID)
+                .set(message)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onSuccess(DocumentReference documentReference) {
+                    public void onSuccess(Void aVoid) {
                         Log.d(TAG, "onSuccess: saved message in message document ");
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -310,4 +418,47 @@ public class PrivateMessageActivity extends AppCompatActivity implements View.On
                 });
     }
 
+    private void deleteMessageAfterSeen()
+    {
+        DocumentReference docRef = db.collection("MessagesCollection")
+                .document(receiverId)
+                .collection("MyMessages")
+                .document(firebaseAuth.getCurrentUser().getUid());
+
+        docRef.collection("Messages")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful())
+                        {
+                            for(DocumentSnapshot snapshot : task.getResult())
+                            {
+                                String userId = (String) snapshot.getData().get("messageAdminId");
+                                if(!userId.equals(firebaseAuth.getCurrentUser().getUid()))
+                                {
+                                  deleteMessage(snapshot.getId());
+                                }
+                            }
+                        }else{
+                            Log.d(TAG, "onComplete: fail to get data");
+                        }
+                    }
+                });
+    }
+
+    private void deleteMessage(String messageUniqueId)
+    {
+        new MyFirestore(receiverId, messageUniqueId).deleteMessage();
+    }
+
+    private class AsyncTaskBack extends AsyncTask<Void,Void,Void>
+    {
+        @Override
+        protected Void doInBackground(Void... voids) {
+        retrieveMessage();
+        return null;
+    }
+
+    }
 }

@@ -5,12 +5,13 @@ import java.util.List;
 
 public class UserProfile {
     private String firstName, middleName , lastName;
-    private String username ="Username";
+    private String username ="Unknown";
     private String profileImageSrc;
-    private String profileBio ="User Bio";
+    private String profileBio ="No bio available";
     private long timeAccountCreated;
     private String userID;
     private String userPhoneNumber;
+    private String emailAddress;
     private List<String> groupList = new ArrayList<>();
 
 
@@ -19,6 +20,13 @@ public class UserProfile {
 
     }
 
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
 
     public String getUserPhoneNumber() {
         return userPhoneNumber;

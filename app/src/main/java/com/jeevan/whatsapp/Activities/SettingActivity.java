@@ -247,7 +247,7 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
 
         if(profileImageSrc != null)
         {
-            Picasso.get().load(profileImageSrc).into(circleProfileImage, new Callback() {
+            Picasso.get().load(profileImageSrc).placeholder(R.drawable.profile).into(circleProfileImage, new Callback() {
                 @Override
                 public void onSuccess() {
                     Log.d(TAG, "onSuccess: profile image");

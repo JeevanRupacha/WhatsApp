@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/group_message_root_view"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -21,59 +22,13 @@
             android:layout_height="wrap_content"
             layout="@layout/app_bar_layout" />
 
-        <ScrollView
-            android:id="@+id/group_message_scrollView"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/group_message_recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"/>
 
-            <LinearLayout
-                android:id="@+id/middle_message_layout"
-                android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:paddingBottom="8dp"
-                android:layout_height="wrap_content"
-                android:focusable="true"
-                android:focusableInTouchMode="true">
-
-                <TextView
-                    android:id="@+id/messageTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="" />
-            </LinearLayout>
-
-        </ScrollView>
-
-        <LinearLayout
-            android:id="@+id/input_message_bar_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:gravity="center_vertical">
-
-            <EditText
-                android:id="@+id/input_message_editText_group"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Enter message"
-                android:fontFamily="@font/roboto"
-                android:inputType="textAutoCorrect"/>
-
-            <ImageButton
-                android:id="@+id/send_message_button_group"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:tint="@color/colorPrimary"
-                android:scaleType="centerInside"
-                android:background="@drawable/circle_background"
-                android:src="@drawable/ic_baseline_send_24"
-                tools:src="@drawable/ic_baseline_send_24"
-                />
-
-        </LinearLayout>
+       <include layout="@layout/message_input_layout"/>
 
     </LinearLayout>
 

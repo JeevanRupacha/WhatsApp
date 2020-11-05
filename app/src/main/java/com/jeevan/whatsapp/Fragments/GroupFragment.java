@@ -1,6 +1,8 @@
 package com.jeevan.whatsapp.Fragments;
 
 import android.app.AlertDialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -131,11 +133,14 @@ public class GroupFragment extends Fragment implements View.OnClickListener {
 
                 if (snapshot != null && snapshot.exists()) {
                     List<String> groupIdList = (List<String>) snapshot.getData().get(FeedDataEntry.GROUP_LIST);
-                    assert groupIdList != null;
-                    for (String groupId : groupIdList)
+
+                    if(groupIdList != null)
                     {
-                        mDataset.clear();
-                        getGroup(groupId);
+                        for (String groupId : groupIdList)
+                        {
+                            mDataset.clear();
+                            getGroup(groupId);
+                        }
                     }
 
                     Log.d(TAG, "onComplete: groupList "+ groupIdList);
@@ -192,9 +197,12 @@ public class GroupFragment extends Fragment implements View.OnClickListener {
         builder.setView(alertView);
 
         //Show alert
-        final AlertDialog alertDialog = builder.show();
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        alertDialog.show();
 
         final EditText groupCodeInput = alertView.findViewById(R.id.input_group_code);
+
 
         alertView.findViewById(R.id.submit_group_popup).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -266,8 +274,6 @@ public class GroupFragment extends Fragment implements View.OnClickListener {
 
         groupListIdRef.update("members", FieldValue.arrayUnion(auth.getCurrentUser().getUid()));
         mAdapter.notifyDataSetChanged();
-
-        Toast.makeText(getActivity(), "Success! member added in group", Toast.LENGTH_SHORT).show();
     }
 
     private void createAlertDialog() {
@@ -276,7 +282,9 @@ public class GroupFragment extends Fragment implements View.OnClickListener {
         builder.setView(alertView);
 
         //Show alert
-        final AlertDialog alertDialog = builder.show();
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        alertDialog.show();
 
         final EditText groupNameInput = alertView.findViewById(R.id.input_group_name);
         final EditText groupCodeInput = alertView.findViewById(R.id.input_group_code);
@@ -336,7 +344,7 @@ public class GroupFragment extends Fragment implements View.OnClickListener {
                                     Log.d(TAG, "onComplete: "+ snapshot.getId() +"and " + snapshot.getData().get("groupCode"));
                                     return;
                                 }else{
-                                    Toast.makeText(getActivity(), "Code number is not found !", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), "Code number is not found !", Toast.LENGTH_LONG).show();
                                 }
                             }
 

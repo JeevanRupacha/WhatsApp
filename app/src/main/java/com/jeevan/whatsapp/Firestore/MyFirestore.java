@@ -25,6 +25,8 @@ public class MyFirestore {
     //debug string
     private static final String TAG = "MyFirestore";
 
+    private String receiverId, messageKey;
+
     /**
      * Firebase Firestore setup
      */
@@ -35,7 +37,13 @@ public class MyFirestore {
      * Firebase Firestore
      */
 
-    public MyFirestore() {
+    public  MyFirestore(){
+
+    }
+
+    public MyFirestore(String receiverId, String messageKey) {
+    this.receiverId = receiverId;
+    this.messageKey = messageKey;
     }
 
 
@@ -90,5 +98,29 @@ public class MyFirestore {
                 Log.d(TAG, "onFailure: Failed to send message ");
             }
         });
+    }
+
+
+    public void deleteMessage()
+    {
+        deleteMessageFromPrivate(messageKey,firebaseAuth.getCurrentUser().getUid(),receiverId);
+        deleteMessageFromPrivate(messageKey,receiverId,firebaseAuth.getCurrentUser().getUid());
+    }
+
+    private void deleteMessageFromPrivate(String messageKey, String senderId, final String receiverId) {
+        DocumentReference docRef = db.collection("MessagesCollection")
+                .document(senderId)
+                .collection("MyMessages")
+                .document(receiverId)
+                .collection("Messages")
+                .document(messageKey);
+
+        docRef.delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "onSuccess: Success to delete the message " );
+                    }
+                });
     }
 }

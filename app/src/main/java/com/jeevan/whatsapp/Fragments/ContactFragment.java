@@ -26,6 +26,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,11 +59,9 @@ public class ContactFragment extends Fragment
     private ContactListRecyclerViewAdapter mAdapter;
 
 
-    //firebase setup
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private FirebaseAuth auth = FirebaseAuth.getInstance();
 
     private ArrayList<Map> mDataset;
+    private static ContactFragment INSTANCE = null;
 
     @Nullable
     @Override
@@ -84,13 +83,21 @@ public class ContactFragment extends Fragment
     public void onStart() {
         super.onStart();
         loadContactsPermission();
-        Toast.makeText(getActivity(), "number" + auth.getCurrentUser().getPhoneNumber(), Toast.LENGTH_SHORT).show();
+    }
+
+    public static ContactFragment getInstance()
+    {
+        if(INSTANCE == null){
+            INSTANCE = new ContactFragment();
+        }
+        return INSTANCE;
     }
 
     private void initializeFields()
     {
         recyclerView = getView().findViewById(R.id.contact_recyclerView);
         mDataset = new ArrayList<>();
+
     }
 
     private void setUpRecyclerView() {
@@ -101,10 +108,8 @@ public class ContactFragment extends Fragment
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
 
-        // specify an adapter (see also next example)
         Log.d(TAG, "setUpRecyclerView: "+ mDataset);
         mAdapter = new ContactListRecyclerViewAdapter(mDataset, getContext());
-        mAdapter.notifyDataSetChanged();
         recyclerView.setAdapter(mAdapter);
     }
 
@@ -211,6 +216,8 @@ public class ContactFragment extends Fragment
             setUpRecyclerView();
         }
     }
+
+
 
 }
 

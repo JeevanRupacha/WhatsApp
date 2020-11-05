@@ -83,11 +83,9 @@ public class ChatFragment extends Fragment {
         // use a linear layout manager
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
-
         // specify an adapter (see also next example)
         Log.d(TAG, "setUpRecyclerView: "+ mDataset);
         mAdapter = new ChatListRecyclerViewAdapter(mDataset, getContext());
-        mAdapter.notifyDataSetChanged();
         recyclerView.setAdapter(mAdapter);
 
     }

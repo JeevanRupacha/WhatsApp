@@ -80,8 +80,20 @@ public class FindFriendsActivity extends AppCompatActivity {
             @Override
             public void onChanged(ArrayList<Map> usersArrayList) {
                 mDataset.clear();
-                mDataset.addAll(usersArrayList);
-                setUpRecyclerView();
+
+                if(usersArrayList != null && !usersArrayList.isEmpty())
+                {
+                    for(Map user: usersArrayList)
+                    {
+                        if(user != null && !user.get("userID").equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                            mDataset.add(user);
+                        }
+
+                    }
+                    setUpRecyclerView();
+                }
+
+
             }
         });
     }

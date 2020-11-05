@@ -1,20 +1,33 @@
 package com.jeevan.whatsapp.Ui.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.jeevan.whatsapp.Activities.PrivateMessageActivity;
 import com.jeevan.whatsapp.Data.FeedDataEntry;
+import com.jeevan.whatsapp.Fragments.ContactFragment;
 import com.jeevan.whatsapp.R;
+import com.jeevan.whatsapp.WhatsAppMVVC.WhatsAppDataModel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -25,6 +38,10 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
     private Context context;
 
     private final static String TAG = "ContactRecyclerView";
+
+    //firebase firestore
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuth auth = FirebaseAuth.getInstance();
 
     public ContactListRecyclerViewAdapter(ArrayList<Map> data, Context context)
     {
@@ -44,29 +61,64 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
+
+        final String number = dataList.get(position).get(FeedDataEntry.CONTACT_NUMBER).toString()
+                .replaceAll("-","")
+                .replaceAll(" ","")
+                .replaceAll("\\(","")
+                .replaceAll("\\)","");
 
         holder.contactName.setText(dataList.get(position).get(FeedDataEntry.CONTACT_NAME).toString());
-        holder.contactNumber.setText(dataList.get(position).get(FeedDataEntry.CONTACT_NUMBER).toString());
+        holder.contactNumber.setText(number);
 
-      holder.listCardView.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-              Toast.makeText(context, "clicked", Toast.LENGTH_SHORT).show();
-//              sendToMessageActivity(dataList.get(position));
-          }
-      });
+        db.collection("Users")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful())
+                        {
+                            QuerySnapshot snapshot = task.getResult();
+
+                            for (final DocumentSnapshot user: snapshot)
+                            {
+                                Log.d(TAG, "onComplete: " +user.getData().get("userPhoneNumber") + "to match " + number);
+                                if(user.getData().get("userPhoneNumber") != null && user.getData().get("userPhoneNumber").equals(number))
+                                {
+                                    Log.d(TAG, "onComplete: Matched");
+                                    holder.messageButton.setVisibility(View.VISIBLE);
+                                    holder.messageButton.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            Intent intent = new Intent(context, PrivateMessageActivity.class);
+                                            intent.putExtra("hashMap", (Serializable) user.getData());
+                                            intent.putExtra("phoneNumber",number);
+                                            intent.putExtra("contactName",dataList.get(position).get(FeedDataEntry.CONTACT_NAME).toString());
+                                            context.startActivity(intent);
+
+                                        }
+
+
+                                    });
+                                    break;
+                                }else{
+                                    holder.messageButton.setVisibility(View.GONE);
+
+                                }
+                            }
+                        }else{
+                            Log.d(TAG, "onComplete: Fails to load");
+                        }
+                    }
+                });
+
+
+
+
     }
 
 
-    private void sendToMessageActivity(Map map) {
-//        Intent intent = new Intent(context, GroupMessageActivity.class);
-//            if(map.get(FeedDataEntry.GROUP_TITLE) != null && map.get(FeedDataEntry.GROUP_ID) != null){
-//            intent.putExtra(FeedDataEntry.GROUP_TITLE,map.get(FeedDataEntry.GROUP_TITLE).toString());
-//            intent.putExtra(FeedDataEntry.GROUP_ID, map.get(FeedDataEntry.GROUP_ID).toString());
-//        }
-//        context.startActivity(intent);
-    }
 
     @Override
     public int getItemCount() {
@@ -82,11 +134,14 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
 
         private TextView contactName, contactNumber ;
         private CardView listCardView;
+        private ImageButton messageButton;
+
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             contactName = (TextView) itemView.findViewById(R.id.contact_name);
             contactNumber = (TextView) itemView.findViewById(R.id.contact_phone_number);
             listCardView = (CardView)itemView.findViewById(R.id.contact_list_cardView);
+            messageButton = itemView.findViewById(R.id.message_button_contact_list);
         }
 
     }

@@ -53,7 +53,7 @@ public class FriendListRecyclerViewAdapter extends RecyclerView.Adapter<FriendLi
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
 
-        if(dataList.get(position).get("userID") != null && !dataList.get(position).get("userID").equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+        if(dataList.get(position).get("userID") != null) {
 
             holder.username.setText((String) dataList.get(position).get("username"));
             holder.userBio.setText((String) dataList.get(position).get("profileBio"));

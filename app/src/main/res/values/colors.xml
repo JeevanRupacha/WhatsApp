@@ -9,5 +9,6 @@
     <color name="start_btn_num_login">#2979FF</color>
     <color name="end_btn_num_login">#1E88E5</color>
     <color name="group_list_back">#9F9F9F</color>
+    <color name="received_msg_back">#C5CAE9</color>
 
 </resources>

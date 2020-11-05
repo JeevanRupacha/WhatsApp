@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/group_popup_dialog">
+
+
+
+
+    <LinearLayout
+        android:background="@drawable/group_popup_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
+            android:text="@string/confirm_delete"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center_horizontal"
+            android:textSize="28sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
+            android:text="@string/delete_message"
+            android:layout_marginLeft="8dp"
+            android:layout_margin="16dp"
+            android:layout_gravity="center_horizontal"
+            android:textSize="16sp" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="32dp"
+            android:background="@color/colorPrimary">
+
+            <Button
+                android:id="@+id/yes_button"
+                android:text="Yes"
+                style="@style/delete_confirm_popup_button"/>
+
+            <Button
+                android:id="@+id/no_button"
+                android:text="No"
+                style="@style/delete_confirm_popup_button"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</RelativeLayout>
